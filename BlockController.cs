@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
+using System.Collections.Generic;
 
 public class BlockController : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
@@ -23,6 +24,10 @@ public class BlockController : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     public string formulaBase = "E";
     public string exponentTop = "n";
     public string exponentBottom = "x";
+
+    [Header("Structures")]
+    public List<Transform> blockStructures = new List<Transform>();
+    public string selectedStructure = "";
 
     private LevelController levelController;
     private Vector3 originalPosition;
@@ -48,8 +53,10 @@ public class BlockController : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         transform.localScale = new Vector3(width * cellSize, height * cellSize, 1f);
     }
 
-    void UpdateBlockDisplay()
+    public void UpdateBlockDisplay()
     {
+        blockStructures.RemoveAll(t => t == null);
+
         Transform textInput = transform.Find("TextInput");
         Transform formulaInput = transform.Find("FormulaInput");
 
@@ -79,7 +86,7 @@ public class BlockController : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     void OnValidate()
     {
-        if (Application.isPlaying == false)
+        if (!Application.isPlaying)
         {
             levelController = FindFirstObjectByType<LevelController>();
             AlignToGrid();
@@ -113,20 +120,27 @@ public class BlockController : MonoBehaviour, IBeginDragHandler, IDragHandler, I
             EmptyController empty = hit.GetComponent<EmptyController>();
             if (empty != null)
             {
-                Debug.Log($"Блок {blockHashId} помещён на ячейку {empty.cellHashId}");
+                Debug.Log($"Р‘Р»РѕРє {blockHashId} РїРѕРјРµС‰С‘РЅ РЅР° СЏС‡РµР№РєСѓ {empty.cellHashId}");
                 if (blockHashId == empty.cellHashId)
                 {
-                    Debug.Log("Блок правильно подставлен!");
+                    Debug.Log("Р‘Р»РѕРє РїСЂР°РІРёР»СЊРЅРѕ РїРѕРґСЃС‚Р°РІР»РµРЅ!");
                 }
                 else
                 {
-                    Debug.Log("Хеш не совпадает!");
+                    Debug.Log("РҐРµС€ РЅРµ СЃРѕРІРїР°РґР°РµС‚!");
                 }
                 return;
             }
         }
 
-        Debug.Log("Блок не попал ни в одну ячейку");
+        Debug.Log("Р‘Р»РѕРє РЅРµ РїРѕРїР°Р» РЅРё РІ РѕРґРЅСѓ СЏС‡РµР№РєСѓ");
         transform.position = originalPosition;
+    }
+
+    public void AddNewStructure(string name)
+    {
+        GameObject newObj = new GameObject(name);
+        newObj.transform.SetParent(this.transform);
+        blockStructures.Add(newObj.transform);
     }
 }
