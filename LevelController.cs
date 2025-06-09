@@ -1,6 +1,5 @@
 using UnityEngine;
 
-[ExecuteInEditMode]
 public class LevelController : MonoBehaviour
 {
     [Header("Grid Size")]
@@ -29,17 +28,21 @@ public class LevelController : MonoBehaviour
     [Range(0f, 1f)]
     public float fillAlpha = 0.1f;
 
+    public Vector2 GridOrigin => gridOrigin + new Vector2(transform.position.x, transform.position.y) - ((new Vector2(columns, rows) * cellSize) / 2.0f);
+
     private void OnDrawGizmos()
     {
         if (Application.isPlaying) return;
 
         Gizmos.color = new Color(lineColor.r, lineColor.g, lineColor.b, fillAlpha);
 
+        var cachedOrigin = GridOrigin;
+
         for (int x = 0; x < columns; x++)
         {
             for (int y = 0; y < rows; y++)
             {
-                Vector3 cellCenter = GetCellCenter(x, y);
+                Vector3 cellCenter = GetCellCenter(x, y, cachedOrigin);
                 Vector3 size = new Vector3(cellSize, cellSize, 0f);
                 Gizmos.DrawCube(cellCenter, size);
             }
@@ -50,28 +53,28 @@ public class LevelController : MonoBehaviour
 
         for (int x = 0; x <= columns; x++)
         {
-            Vector3 from = new Vector3(gridOrigin.x + x * cellSize, gridOrigin.y, 0f);
-            Vector3 to = new Vector3(gridOrigin.x + x * cellSize, gridOrigin.y + rows * cellSize, 0f);
+            Vector3 from = new Vector3(cachedOrigin.x + x * cellSize, cachedOrigin.y, 0f);
+            Vector3 to = new Vector3(cachedOrigin.x + x * cellSize, cachedOrigin.y + rows * cellSize, 0f);
             Gizmos.DrawLine(from, to);
         }
 
         for (int y = 0; y <= rows; y++)
         {
-            Vector3 from = new Vector3(gridOrigin.x, gridOrigin.y + y * cellSize, 0f);
-            Vector3 to = new Vector3(gridOrigin.x + columns * cellSize, gridOrigin.y + y * cellSize, 0f);
+            Vector3 from = new Vector3(cachedOrigin.x, cachedOrigin.y + y * cellSize, 0f);
+            Vector3 to = new Vector3(cachedOrigin.x + columns * cellSize, cachedOrigin.y + y * cellSize, 0f);
             Gizmos.DrawLine(from, to);
         }
 
-        DrawGridOutline();
+        DrawGridOutline(cachedOrigin);
     }
 
-    private void DrawGridOutline()
+    private void DrawGridOutline(Vector2 origin)
     {
         Gizmos.color = Color.black;
-        Vector3 bottomLeft = new Vector3(gridOrigin.x, gridOrigin.y, 0f);
-        Vector3 topLeft = new Vector3(gridOrigin.x, gridOrigin.y + rows * cellSize, 0f);
-        Vector3 topRight = new Vector3(gridOrigin.x + columns * cellSize, gridOrigin.y + rows * cellSize, 0f);
-        Vector3 bottomRight = new Vector3(gridOrigin.x + columns * cellSize, gridOrigin.y, 0f);
+        Vector3 bottomLeft = new Vector3(origin.x, origin.y, 0f);
+        Vector3 topLeft = new Vector3(origin.x, origin.y + rows * cellSize, 0f);
+        Vector3 topRight = new Vector3(origin.x + columns * cellSize, origin.y + rows * cellSize, 0f);
+        Vector3 bottomRight = new Vector3(origin.x + columns * cellSize, origin.y, 0f);
 
         Gizmos.DrawLine(bottomLeft, topLeft);
         Gizmos.DrawLine(topLeft, topRight);
@@ -79,11 +82,11 @@ public class LevelController : MonoBehaviour
         Gizmos.DrawLine(bottomRight, bottomLeft);
     }
 
-    public Vector3 GetCellCenter(int column, int row)
+    public Vector3 GetCellCenter(int column, int row, Vector2 origin)
     {
         return new Vector3(
-            gridOrigin.x + column * cellSize + cellSize / 2f,
-            gridOrigin.y + row * cellSize + cellSize / 2f,
+            origin.x + column * cellSize + cellSize / 2f,
+            origin.y + row * cellSize + cellSize / 2f,
             0f
         );
     }
